@@ -4,6 +4,7 @@ const taskForm = document.getElementById('task-form');
 const taskInput = document.getElementById('task-input');
 const taskList = document.getElementById('task-list');
 const taskSummary = document.getElementById('task-summary');
+const taskFeedback = document.getElementById('task-feedback');
 const currentDate = document.getElementById('current-date');
 const totalCount = document.getElementById('total-count');
 const pendingCount = document.getElementById('pending-count');
@@ -14,6 +15,11 @@ const clearCompletedButton = document.getElementById('clear-completed');
 
 let currentFilter = 'all';
 let tasks = [];
+let feedbackTimeout;
+
+function getTaskKey(text) {
+  return text.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+}
 
 function normalizeTask(task) {
   return {
@@ -26,10 +32,30 @@ function normalizeTask(task) {
 function loadTasks() {
   try {
     const savedTasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    tasks = Array.isArray(savedTasks) ? savedTasks.map(normalizeTask).filter((task) => task.text) : [];
+    const loadedTasks = Array.isArray(savedTasks) ? savedTasks.map(normalizeTask).filter((task) => task.text) : [];
+    const knownKeys = new Set();
+
+    tasks = loadedTasks.filter((task) => {
+      const taskKey = getTaskKey(task.text);
+      if (knownKeys.has(taskKey)) return false;
+
+      knownKeys.add(taskKey);
+      return true;
+    });
+
+    if (tasks.length !== loadedTasks.length) saveTasks();
   } catch (error) {
     tasks = [];
   }
+}
+
+function showFeedback(message) {
+  clearTimeout(feedbackTimeout);
+  taskFeedback.textContent = message;
+  taskFeedback.classList.add('visible');
+  feedbackTimeout = setTimeout(() => {
+    taskFeedback.classList.remove('visible');
+  }, 3500);
 }
 
 function saveTasks() {
@@ -93,8 +119,15 @@ function addTask(text) {
   const cleanText = text.trim();
 
   if (!cleanText) {
+    showFeedback('Escribe una tarea antes de agregarla.');
     taskInput.focus();
-    return;
+    return false;
+  }
+
+  if (tasks.some((task) => getTaskKey(task.text) === getTaskKey(cleanText))) {
+    showFeedback('Esta tarea ya existe en tu lista.');
+    taskInput.focus();
+    return false;
   }
 
   tasks.unshift({
@@ -105,6 +138,8 @@ function addTask(text) {
 
   saveTasks();
   render();
+  taskFeedback.classList.remove('visible');
+  return true;
 }
 
 function toggleTask(id, completed) {
@@ -153,9 +188,10 @@ function init() {
 
   taskForm.addEventListener('submit', (event) => {
     event.preventDefault();
-    addTask(taskInput.value);
-    taskInput.value = '';
-    taskInput.focus();
+    if (addTask(taskInput.value)) {
+      taskInput.value = '';
+      taskInput.focus();
+    }
   });
 
   taskList.addEventListener('change', (event) => {
