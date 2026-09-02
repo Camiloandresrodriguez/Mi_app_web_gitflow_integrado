@@ -512,6 +512,20 @@ h2 {
   box-shadow: 0 0 0 4px rgba(232, 93, 69, 0.12);
 }
 
+.task-feedback {
+  min-height: 18px;
+  margin: -12px 0 12px;
+  color: var(--danger);
+  font-size: 0.78rem;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.task-feedback.visible {
+  opacity: 1;
+}
+
 .task-form button,
 .primary-btn {
   display: inline-flex;
