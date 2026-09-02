@@ -3,18 +3,47 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mi App Web</title>
+    <title>Mi App Web | Plan del día</title>
     <link rel="stylesheet" href="Style.css" />
   </head>
   <body>
     <main class="app">
       <header class="header">
-        <div class="header-badge">Plan del día</div>
-        <p class="eyebrow">Gestión rápida</p>
-        <h1>Mi App Web</h1>
+        <div>
+          <p class="eyebrow">Panel personal</p>
+          <h1>Plan del día<span>.</span></h1>
+          <p id="current-date" class="date-label"></p>
+        </div>
+        <div class="header-mark" aria-hidden="true">PD</div>
       </header>
 
+      <section class="overview" aria-label="Resumen de tareas">
+        <article class="stat-card stat-card-main">
+          <span class="stat-icon">01</span>
+          <div>
+            <strong id="total-count">0</strong>
+            <span>Total de tareas</span>
+          </div>
+        </article>
+        <article class="stat-card">
+          <strong id="pending-count">0</strong>
+          <span>Por hacer</span>
+        </article>
+        <article class="stat-card">
+          <strong id="completed-count">0%</strong>
+          <span>Completado</span>
+        </article>
+      </section>
+
       <section class="card">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Tu lista</p>
+            <h2>Enfoque de hoy</h2>
+          </div>
+          <span class="status-dot">En marcha</span>
+        </div>
+
         <form id="task-form" class="task-form">
           <input
             id="task-input"
@@ -24,7 +53,7 @@
             aria-label="Nueva tarea"
             required
           />
-          <button type="submit">Agregar</button>
+          <button type="submit"><span aria-hidden="true">+</span>Agregar tarea</button>
         </form>
 
         <div class="toolbar">
