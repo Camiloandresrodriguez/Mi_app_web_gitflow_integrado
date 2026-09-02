@@ -4,6 +4,10 @@ const taskForm = document.getElementById('task-form');
 const taskInput = document.getElementById('task-input');
 const taskList = document.getElementById('task-list');
 const taskSummary = document.getElementById('task-summary');
+const currentDate = document.getElementById('current-date');
+const totalCount = document.getElementById('total-count');
+const pendingCount = document.getElementById('pending-count');
+const completedCount = document.getElementById('completed-count');
 const filterButtons = [...document.querySelectorAll('.filter-btn')];
 const toggleAllButton = document.getElementById('toggle-all');
 const clearCompletedButton = document.getElementById('clear-completed');
@@ -44,10 +48,15 @@ function getVisibleTasks() {
 }
 
 function updateSummary() {
-  const pendingCount = tasks.filter((task) => !task.completed).length;
-  const label = pendingCount === 1 ? 'tarea pendiente' : 'tareas pendientes';
+  const pendingTasks = tasks.filter((task) => !task.completed).length;
+  const completedTasks = tasks.length - pendingTasks;
+  const completionRate = tasks.length ? Math.round((completedTasks / tasks.length) * 100) : 0;
+  const label = pendingTasks === 1 ? 'tarea pendiente' : 'tareas pendientes';
 
-  taskSummary.textContent = `${pendingCount} ${label}`;
+  taskSummary.textContent = `${pendingTasks} ${label}`;
+  totalCount.textContent = tasks.length;
+  pendingCount.textContent = pendingTasks;
+  completedCount.textContent = `${completionRate}%`;
 }
 
 function render() {
@@ -136,6 +145,11 @@ function setFilter(newFilter) {
 
 function init() {
   loadTasks();
+  currentDate.textContent = new Intl.DateTimeFormat('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(new Date());
 
   taskForm.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -177,4 +191,3 @@ function init() {
 }
 
 init();
-
