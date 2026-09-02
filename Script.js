@@ -1,1 +1,179 @@
-function_1():
+const STORAGE_KEY = 'mi_app_web_tasks_v1';
+
+const taskForm = document.getElementById('task-form');
+const taskInput = document.getElementById('task-input');
+const taskList = document.getElementById('task-list');
+const taskSummary = document.getElementById('task-summary');
+const filterButtons = [...document.querySelectorAll('.filter-btn')];
+const toggleAllButton = document.getElementById('toggle-all');
+const clearCompletedButton = document.getElementById('clear-completed');
+
+let currentFilter = 'all';
+let tasks = [];
+
+function normalizeTask(task) {
+  return {
+    id: Number(task.id) || Date.now() + Math.random(),
+    text: String(task.text || '').trim(),
+    completed: Boolean(task.completed),
+  };
+}
+
+function loadTasks() {
+  try {
+    const savedTasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    tasks = Array.isArray(savedTasks) ? savedTasks.map(normalizeTask).filter((task) => task.text) : [];
+  } catch (error) {
+    tasks = [];
+  }
+}
+
+function saveTasks() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+}
+
+function getVisibleTasks() {
+  switch (currentFilter) {
+    case 'pending':
+      return tasks.filter((task) => !task.completed);
+    case 'completed':
+      return tasks.filter((task) => task.completed);
+    default:
+      return tasks;
+  }
+}
+
+function updateSummary() {
+  const pendingCount = tasks.filter((task) => !task.completed).length;
+  const label = pendingCount === 1 ? 'tarea pendiente' : 'tareas pendientes';
+
+  taskSummary.textContent = `${pendingCount} ${label}`;
+}
+
+function render() {
+  const visibleTasks = getVisibleTasks();
+
+  if (!visibleTasks.length) {
+    taskList.innerHTML = '<li class="empty-state">No hay tareas en esta vista.</li>';
+  } else {
+    taskList.innerHTML = visibleTasks
+      .map(
+        (task) => `
+          <li class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
+            <label class="task-label">
+              <input type="checkbox" ${task.completed ? 'checked' : ''} aria-label="Marcar tarea como completada" />
+              <span class="task-text">${task.text}</span>
+            </label>
+            <button type="button" class="delete-btn" aria-label="Eliminar tarea">Eliminar</button>
+          </li>
+        `
+      )
+      .join('');
+  }
+
+  const hasCompletedTasks = tasks.some((task) => task.completed);
+  const allCompleted = tasks.length > 0 && tasks.every((task) => task.completed);
+
+  toggleAllButton.textContent = allCompleted ? 'Desmarcar todas' : 'Completar todas';
+  toggleAllButton.disabled = tasks.length === 0;
+  clearCompletedButton.disabled = !hasCompletedTasks;
+  updateSummary();
+}
+
+function addTask(text) {
+  const cleanText = text.trim();
+
+  if (!cleanText) {
+    taskInput.focus();
+    return;
+  }
+
+  tasks.unshift({
+    id: Date.now() + Math.random(),
+    text: cleanText,
+    completed: false,
+  });
+
+  saveTasks();
+  render();
+}
+
+function toggleTask(id, completed) {
+  tasks = tasks.map((task) => (task.id === id ? { ...task, completed } : task));
+  saveTasks();
+  render();
+}
+
+function deleteTask(id) {
+  tasks = tasks.filter((task) => task.id !== id);
+  saveTasks();
+  render();
+}
+
+function toggleAllTasks() {
+  const shouldComplete = !tasks.every((task) => task.completed);
+  tasks = tasks.map((task) => ({ ...task, completed: shouldComplete }));
+  saveTasks();
+  render();
+}
+
+function clearCompletedTasks() {
+  tasks = tasks.filter((task) => !task.completed);
+  saveTasks();
+  render();
+}
+
+function setFilter(newFilter) {
+  currentFilter = newFilter;
+
+  filterButtons.forEach((button) => {
+    const isActive = button.dataset.filter === currentFilter;
+    button.classList.toggle('active', isActive);
+  });
+
+  render();
+}
+
+function init() {
+  loadTasks();
+
+  taskForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    addTask(taskInput.value);
+    taskInput.value = '';
+    taskInput.focus();
+  });
+
+  taskList.addEventListener('change', (event) => {
+    const checkbox = event.target.closest('input[type="checkbox"]');
+    if (!checkbox) return;
+
+    const taskItem = checkbox.closest('.task-item');
+    if (!taskItem) return;
+
+    const taskId = Number(taskItem.dataset.id);
+    toggleTask(taskId, checkbox.checked);
+  });
+
+  taskList.addEventListener('click', (event) => {
+    const deleteButton = event.target.closest('.delete-btn');
+    if (!deleteButton) return;
+
+    const taskItem = deleteButton.closest('.task-item');
+    if (!taskItem) return;
+
+    const taskId = Number(taskItem.dataset.id);
+    deleteTask(taskId);
+  });
+
+  filterButtons.forEach((button) => {
+    button.addEventListener('click', () => setFilter(button.dataset.filter));
+  });
+
+  toggleAllButton.addEventListener('click', toggleAllTasks);
+  clearCompletedButton.addEventListener('click', clearCompletedTasks);
+
+  render();
+}
+
+init();
