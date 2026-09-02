@@ -1,11 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>Titulo</h1>
-</body>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi App Web</title>
+    <link rel="stylesheet" href="Style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="header">
+        <div class="header-badge">Plan del día</div>
+        <p class="eyebrow">Gestión rápida</p>
+        <h1>Mi App Web</h1>
+      </header>
+
+      <section class="card">
+        <form id="task-form" class="task-form">
+          <input
+            id="task-input"
+            type="text"
+            placeholder="Escribe una tarea..."
+            maxlength="80"
+            aria-label="Nueva tarea"
+            required
+          />
+          <button type="submit">Agregar</button>
+        </form>
+
+        <div class="toolbar">
+          <div class="filter-group" role="group" aria-label="Filtrar tareas">
+            <button type="button" class="filter-btn active" data-filter="all">Todas</button>
+            <button type="button" class="filter-btn" data-filter="pending">Pendientes</button>
+            <button type="button" class="filter-btn" data-filter="completed">Completadas</button>
+          </div>
+
+          <div class="toolbar-actions">
+            <button type="button" id="toggle-all" class="primary-btn">Completar todas</button>
+            <button type="button" id="clear-completed" class="secondary-btn">Limpiar completadas</button>
+          </div>
+        </div>
+
+        <ul id="task-list" class="task-list" aria-live="polite"></ul>
+
+        <p id="task-summary" class="summary">0 tareas pendientes</p>
+      </section>
+    </main>
+
+    <script src="Script.js" defer></script>
+  </body>
 </html>
